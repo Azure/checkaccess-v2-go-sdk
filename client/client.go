@@ -65,7 +65,9 @@ func (r *remotePDPClient) CheckAccess(ctx context.Context, authzReq Authorizatio
 	if err != nil {
 		return nil, err
 	}
-	runtime.MarshalAsJSON(req, authzReq)
+	if err := runtime.MarshalAsJSON(req, authzReq); err != nil {
+		return nil, err
+	}
 
 	res, err := r.pipeline.Do(req)
 	if err != nil {
