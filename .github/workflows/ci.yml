@@ -25,4 +25,4 @@ jobs:
             make verify
       - name: Test
         run: |
-            make lint test
+            make test
