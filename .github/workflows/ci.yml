@@ -20,6 +20,9 @@ jobs:
         with:
           go-version: "1.22.0"
           check-latest: true
+      - name: verify
+        run: |
+            make verify
       - name: Test
         run: |
             make lint test
