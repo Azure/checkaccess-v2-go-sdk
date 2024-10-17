@@ -42,7 +42,7 @@ func NewRemotePDPClient(endpoint, scope string, cred azcore.TokenCredential, cli
 	if strings.TrimSpace(scope) == "" {
 		return nil, fmt.Errorf("scope: %s is not valid, need a valid scope in creating client", scope)
 	}
-	if reflect.ValueOf(cred).IsNil() {
+	if cred == nil && reflect.ValueOf(cred).IsNil() {
 		return nil, fmt.Errorf("need TokenCredential in creating client")
 	}
 

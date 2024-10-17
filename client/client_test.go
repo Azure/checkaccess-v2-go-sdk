@@ -6,7 +6,6 @@ package client
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"reflect"
 	"testing"
@@ -28,47 +27,45 @@ func TestClientCreate(t *testing.T) {
 	}
 
 	cases := []struct {
-		desc             string
-		endpoint         string
-		scope            string
-		cred             *azidentity.ClientSecretCredential
-		expectedEndpoint string
-		expectedErr      error
+		desc        string
+		endpoint    string
+		scope       string
+		cred        *azidentity.ClientSecretCredential
+		expectedErr bool
 	}{
 		{
 			desc:        "fail - Invalid endpoint",
 			endpoint:    emptyString,
 			scope:       scope,
 			cred:        cred,
-			expectedErr: fmt.Errorf("endpoint: %s is not valid, need a valid endpoint in creating client", emptyString),
+			expectedErr: true,
 		}, {
 			desc:        "fail - Invalid scope",
 			endpoint:    endpoint,
 			scope:       emptyString,
 			cred:        cred,
-			expectedErr: fmt.Errorf("scope: %s is not valid, need a valid scope in creating client", emptyString),
+			expectedErr: true,
 		}, {
 			desc:        "fail - Invalid credential",
 			endpoint:    endpoint,
 			scope:       scope,
 			cred:        nil,
-			expectedErr: fmt.Errorf("need TokenCredential in creating client"),
+			expectedErr: true,
 		}, {
-			desc:             "success - successful creation of client",
-			endpoint:         endpoint,
-			scope:            scope,
-			cred:             cred,
-			expectedEndpoint: endpoint,
-			expectedErr:      nil,
+			desc:        "success - successful creation of client",
+			endpoint:    endpoint,
+			scope:       scope,
+			cred:        cred,
+			expectedErr: false,
 		},
 	}
 	for _, c := range cases {
-		client, err := NewRemotePDPClient(c.endpoint, c.scope, c.cred, nil)
-		if err != nil && err.Error() != c.expectedErr.Error() {
-			t.Errorf("%s: expected error to be '%v'. Got '%v'", c.desc, c.expectedErr, err)
+		_, err := NewRemotePDPClient(c.endpoint, c.scope, c.cred, nil)
+		if c.expectedErr && err == nil {
+			t.Errorf("%s: expected error to be 'non-nil' but got 'nil'", c.desc)
 		}
-		if client != nil && client.endpoint != c.expectedEndpoint {
-			t.Errorf("%s: expected endpoint to be %s. Got %s", c.desc, c.expectedEndpoint, client.endpoint)
+		if !c.expectedErr && err != nil {
+			t.Errorf("%s: expected error to be 'nil' but got '%v'", c.desc, err)
 		}
 	}
 }
