@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"reflect"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
@@ -101,6 +102,35 @@ func TestCallingCheckAccess(t *testing.T) {
 				c.desc, c.expectedDecision, c.expectedErr, decision, err)
 		}
 		close()
+	}
+}
+
+func TestCreateAuthorizationRequest(t *testing.T) {
+	subject := "subject123"
+	resourceId := "resource456"
+	claimName := "claim789"
+	actions := []string{"read", "write"}
+
+	expected := AuthorizationRequest{
+		Subject: SubjectInfo{
+			Attributes: SubjectAttributes{
+				ObjectId:  subject,
+				ClaimName: claimName,
+			},
+		},
+		Actions: []ActionInfo{
+			{Id: "read"},
+			{Id: "write"},
+		},
+		Resource: ResourceInfo{
+			Id: resourceId,
+		},
+	}
+
+	result := CreateAuthorizationRequest(subject, resourceId, claimName, actions...)
+
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("CreateAuthorizationRequest() = %v, want %v", result, expected)
 	}
 }
 

@@ -106,3 +106,23 @@ func newCheckAccessError(r *http.Response) error {
 		ErrorCode:   fmt.Sprint(checkAccessError.StatusCode),
 	}
 }
+
+func CreateAuthorizationRequest(subject, resourceId, claimName string, actions ...string) AuthorizationRequest {
+	actionInfos := []ActionInfo{}
+	for _, action := range actions {
+		actionInfos = append(actionInfos, ActionInfo{Id: action})
+	}
+
+	return AuthorizationRequest{
+		Subject: SubjectInfo{
+			Attributes: SubjectAttributes{
+				ObjectId:  subject,
+				ClaimName: claimName,
+			},
+		},
+		Actions: actionInfos,
+		Resource: ResourceInfo{
+			Id: resourceId,
+		},
+	}
+}
