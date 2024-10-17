@@ -7,12 +7,12 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"reflect"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/google/go-cmp/cmp"
 
 	testhttp "github.com/Azure/ARO-RP/test/util/http/server"
 )
@@ -126,8 +126,8 @@ func TestCreateAuthorizationRequest(t *testing.T) {
 
 	result := CreateAuthorizationRequest(subject, resourceId, claimName, actions...)
 
-	if !reflect.DeepEqual(result, expected) {
-		t.Errorf("CreateAuthorizationRequest() = %v, want %v", result, expected)
+	if diff := cmp.Diff(result, expected); diff != "" {
+		t.Errorf("incorrect authorization request: %v", diff)
 	}
 }
 

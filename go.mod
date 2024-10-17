@@ -8,6 +8,7 @@ require (
 	github.com/Azure/ARO-RP v0.0.0-20241015143517-37e6171df994
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.15.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.8.0
+	github.com/google/go-cmp v0.6.0
 )
 
 require (
