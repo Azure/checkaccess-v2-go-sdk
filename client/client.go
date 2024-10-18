@@ -8,12 +8,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
-
-	"github.com/Azure/ARO-RP/pkg/util/azureclient"
 )
 
 // this asserts that &remotePDPClient{} would always implement RemotePDPClient
@@ -34,15 +33,19 @@ type remotePDPClient struct {
 // endpoint - the fqdn of the regional specific endpoint of PDP
 // scope - the oauth scope required by the PDP server
 // cred - the credential of the client to call the PDP server
-func NewRemotePDPClient(endpoint, scope string, cred azcore.TokenCredential) *remotePDPClient {
-	authPolicy := runtime.NewBearerTokenPolicy(cred, []string{scope}, nil)
-
-	customRoundTripper := azureclient.NewCustomRoundTripper(http.DefaultTransport)
-	clientOptions := &azcore.ClientOptions{
-		Transport: &http.Client{
-			Transport: customRoundTripper,
-		},
+// ClientOptions - the optional settings for a client's pipeline.
+func NewRemotePDPClient(endpoint, scope string, cred azcore.TokenCredential, clientOptions *azcore.ClientOptions) (*remotePDPClient, error) {
+	if strings.TrimSpace(endpoint) == "" {
+		return nil, fmt.Errorf("endpoint: %s is not valid, need a valid endpoint in creating client", endpoint)
 	}
+	if strings.TrimSpace(scope) == "" {
+		return nil, fmt.Errorf("scope: %s is not valid, need a valid scope in creating client", scope)
+	}
+	if cred == nil {
+		return nil, fmt.Errorf("need TokenCredential in creating client")
+	}
+
+	authPolicy := runtime.NewBearerTokenPolicy(cred, []string{scope}, nil)
 
 	pipeline := runtime.NewPipeline(
 		modulename,
@@ -54,7 +57,7 @@ func NewRemotePDPClient(endpoint, scope string, cred azcore.TokenCredential) *re
 		clientOptions,
 	)
 
-	return &remotePDPClient{endpoint, pipeline}
+	return &remotePDPClient{endpoint, pipeline}, nil
 }
 
 // CheckAccess sends an Authorization query to the PDP server specified in the client
@@ -100,5 +103,23 @@ func newCheckAccessError(r *http.Response) error {
 		StatusCode:  r.StatusCode,
 		RawResponse: r,
 		ErrorCode:   fmt.Sprint(checkAccessError.StatusCode),
+	}
+}
+
+// CreateAuthorizationRequest creates an AuthorizationRequest object
+func CreateAuthorizationRequest(resourceId string, actions []string, subjectAttributes SubjectAttributes) AuthorizationRequest {
+	actionInfos := []ActionInfo{}
+	for _, action := range actions {
+		actionInfos = append(actionInfos, ActionInfo{Id: action})
+	}
+
+	return AuthorizationRequest{
+		Subject: SubjectInfo{
+			Attributes: subjectAttributes,
+		},
+		Actions: actionInfos,
+		Resource: ResourceInfo{
+			Id: resourceId,
+		},
 	}
 }
