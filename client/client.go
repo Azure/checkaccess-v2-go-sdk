@@ -106,7 +106,8 @@ func newCheckAccessError(r *http.Response) error {
 	}
 }
 
-func CreateAuthorizationRequest(subject, resourceId, claimName string, actions ...string) AuthorizationRequest {
+// CreateAuthorizationRequest creates an AuthorizationRequest object
+func CreateAuthorizationRequest(subject, resourceId string, actions []string, subjectAttributes SubjectAttributes) AuthorizationRequest {
 	actionInfos := []ActionInfo{}
 	for _, action := range actions {
 		actionInfos = append(actionInfos, ActionInfo{Id: action})
@@ -114,10 +115,7 @@ func CreateAuthorizationRequest(subject, resourceId, claimName string, actions .
 
 	return AuthorizationRequest{
 		Subject: SubjectInfo{
-			Attributes: SubjectAttributes{
-				ObjectId:  subject,
-				ClaimName: claimName,
-			},
+			Attributes: subjectAttributes,
 		},
 		Actions: actionInfos,
 		Resource: ResourceInfo{
