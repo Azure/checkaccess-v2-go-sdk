@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
@@ -30,7 +31,7 @@ func TestClientCreate(t *testing.T) {
 		desc        string
 		endpoint    string
 		scope       string
-		cred        *azidentity.ClientSecretCredential
+		cred        azcore.TokenCredential
 		expectedErr bool
 	}{
 		{
@@ -49,7 +50,6 @@ func TestClientCreate(t *testing.T) {
 			desc:        "fail - Invalid credential",
 			endpoint:    endpoint,
 			scope:       scope,
-			cred:        nil,
 			expectedErr: true,
 		}, {
 			desc:        "success - successful creation of client",
@@ -60,13 +60,15 @@ func TestClientCreate(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		_, err := NewRemotePDPClient(c.endpoint, c.scope, c.cred, nil)
-		if c.expectedErr && err == nil {
-			t.Errorf("%s: expected error to be 'non-nil' but got 'nil'", c.desc)
-		}
-		if !c.expectedErr && err != nil {
-			t.Errorf("%s: expected error to be 'nil' but got '%v'", c.desc, err)
-		}
+		t.Run(c.desc, func(t *testing.T) {
+			_, err := NewRemotePDPClient(c.endpoint, c.scope, c.cred, nil)
+			if c.expectedErr && err == nil {
+				t.Errorf("expected error to be 'non-nil' but got '%v'", err)
+			}
+			if !c.expectedErr && err != nil {
+				t.Errorf("expected error to be 'nil' but got '%v'", err)
+			}
+		})
 	}
 }
 
@@ -93,11 +95,13 @@ func TestCallingCheckAccess(t *testing.T) {
 		srv, close := testhttp.NewTLSServer()
 		srv.SetResponse(testhttp.WithStatusCode(c.returnedHttpCode))
 		client := createClientWithServer(srv)
-		decision, err := client.CheckAccess(context.Background(), AuthorizationRequest{})
-		if decision != c.expectedDecision && err != c.expectedErr {
-			t.Errorf("%s: expected decision to be %v; and error to be %s. Got %v and %s",
-				c.desc, c.expectedDecision, c.expectedErr, decision, err)
-		}
+		t.Run(c.desc, func(t *testing.T) {
+			decision, err := client.CheckAccess(context.Background(), AuthorizationRequest{})
+			if decision != c.expectedDecision && err != c.expectedErr {
+				t.Errorf("expected decision to be %v; and error to be %s. Got %v and %s",
+					c.expectedDecision, c.expectedErr, decision, err)
+			}
+		})
 		close()
 	}
 }

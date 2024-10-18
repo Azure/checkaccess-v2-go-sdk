@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"reflect"
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -42,7 +41,7 @@ func NewRemotePDPClient(endpoint, scope string, cred azcore.TokenCredential, cli
 	if strings.TrimSpace(scope) == "" {
 		return nil, fmt.Errorf("scope: %s is not valid, need a valid scope in creating client", scope)
 	}
-	if reflect.ValueOf(cred).IsNil() {
+	if cred == nil {
 		return nil, fmt.Errorf("need TokenCredential in creating client")
 	}
 
