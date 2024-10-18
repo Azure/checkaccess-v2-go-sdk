@@ -107,10 +107,9 @@ func TestCallingCheckAccess(t *testing.T) {
 }
 
 func TestCreateAuthorizationRequest(t *testing.T) {
-	subject := "subject123"
 	resourceId := "resource456"
 	subjectAttributes := SubjectAttributes{
-		ObjectId:  "subject123",
+		ObjectId:  "object123",
 		ClaimName: "claim789",
 	}
 	actions := []string{"read", "write"}
@@ -128,7 +127,7 @@ func TestCreateAuthorizationRequest(t *testing.T) {
 		},
 	}
 
-	result := CreateAuthorizationRequest(subject, resourceId, actions, subjectAttributes)
+	result := CreateAuthorizationRequest(resourceId, actions, subjectAttributes)
 
 	if diff := cmp.Diff(result, expected); diff != "" {
 		t.Errorf("incorrect authorization request: %v", diff)
