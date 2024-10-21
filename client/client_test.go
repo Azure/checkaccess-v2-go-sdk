@@ -19,6 +19,8 @@ import (
 )
 
 func TestClientCreate(t *testing.T) {
+	t.Parallel()
+
 	endpoint := "https://westus.authorization.azure.net/providers/Microsoft.Authorization/checkAccess?api-version=2021-06-01-preview"
 	scope := "https://authorization.azure.net/.default"
 	emptyString := "   "
@@ -60,7 +62,9 @@ func TestClientCreate(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
+		c := c // capture range variable
 		t.Run(c.desc, func(t *testing.T) {
+			t.Parallel()
 			_, err := NewRemotePDPClient(c.endpoint, c.scope, c.cred, nil)
 			if c.expectedErr && err == nil {
 				t.Errorf("expected error to be 'non-nil' but got '%v'", err)
@@ -73,6 +77,8 @@ func TestClientCreate(t *testing.T) {
 }
 
 func TestCallingCheckAccess(t *testing.T) {
+	t.Parallel()
+
 	cases := []struct {
 		desc             string
 		returnedHttpCode int
@@ -92,21 +98,25 @@ func TestCallingCheckAccess(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		srv, close := testhttp.NewTLSServer()
-		srv.SetResponse(testhttp.WithStatusCode(c.returnedHttpCode))
-		client := createClientWithServer(srv)
+		c := c // capture range variable
 		t.Run(c.desc, func(t *testing.T) {
+			t.Parallel()
+			srv, close := testhttp.NewTLSServer()
+			defer close()
+			srv.SetResponse(testhttp.WithStatusCode(c.returnedHttpCode))
+			client := createClientWithServer(srv)
 			decision, err := client.CheckAccess(context.Background(), AuthorizationRequest{})
 			if decision != c.expectedDecision && err != c.expectedErr {
 				t.Errorf("expected decision to be %v; and error to be %s. Got %v and %s",
 					c.expectedDecision, c.expectedErr, decision, err)
 			}
 		})
-		close()
 	}
 }
 
 func TestCreateAuthorizationRequest(t *testing.T) {
+	t.Parallel()
+
 	resourceId := "resource456"
 	subjectAttributes := SubjectAttributes{
 		ObjectId:  "object123",
