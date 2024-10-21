@@ -15,6 +15,10 @@ go-fmt:
 tidy:
 	@go mod tidy
 
+generate: install-tools
+	@echo "Generating code"
+	@go generate ./...
+
 verify: tidy go-fmt lint
 	git diff-index --cached --quiet --ignore-submodules HEAD --
 	git diff-files --quiet --ignore-submodules
