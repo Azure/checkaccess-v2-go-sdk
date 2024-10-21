@@ -23,6 +23,12 @@ $(BINGO): $(BINGO_DIR)/bingo.mod
 	@echo "(re)installing $(GOBIN)/bingo-v0.9.0"
 	@cd $(BINGO_DIR) && GOWORK=off $(GO) build -mod=mod -modfile=bingo.mod -o=$(GOBIN)/bingo-v0.9.0 "github.com/bwplotka/bingo"
 
+GOIMPORTS := $(GOBIN)/goimports-v0.23.0
+$(GOIMPORTS): $(BINGO_DIR)/goimports.mod
+	@# Install binary/ries using Go 1.14+ build command. This is using bwplotka/bingo-controlled, separate go module with pinned dependencies.
+	@echo "(re)installing $(GOBIN)/goimports-v0.23.0"
+	@cd $(BINGO_DIR) && GOWORK=off $(GO) build -mod=mod -modfile=goimports.mod -o=$(GOBIN)/goimports-v0.23.0 "golang.org/x/tools/cmd/goimports"
+
 GOLANGCI_LINT := $(GOBIN)/golangci-lint-v1.59.1
 $(GOLANGCI_LINT): $(BINGO_DIR)/golangci-lint.mod
 	@# Install binary/ries using Go 1.14+ build command. This is using bwplotka/bingo-controlled, separate go module with pinned dependencies.
