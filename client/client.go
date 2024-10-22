@@ -21,6 +21,7 @@ var _ RemotePDPClient = &remotePDPClient{}
 // RemotePDPClient represents the Microsoft Remote PDP API Spec
 type RemotePDPClient interface {
 	CheckAccess(context.Context, AuthorizationRequest) (*AuthorizationDecisionResponse, error)
+	CreateAuthorizationRequest(string, []string, SubjectAttributes) AuthorizationRequest
 }
 
 // remotePDPClient implements RemotePDPClient
@@ -107,7 +108,7 @@ func newCheckAccessError(r *http.Response) error {
 }
 
 // CreateAuthorizationRequest creates an AuthorizationRequest object
-func CreateAuthorizationRequest(resourceId string, actions []string, subjectAttributes SubjectAttributes) AuthorizationRequest {
+func (r *remotePDPClient) CreateAuthorizationRequest(resourceId string, actions []string, subjectAttributes SubjectAttributes) AuthorizationRequest {
 	actionInfos := []ActionInfo{}
 	for _, action := range actions {
 		actionInfos = append(actionInfos, ActionInfo{Id: action})

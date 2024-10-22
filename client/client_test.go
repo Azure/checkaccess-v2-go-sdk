@@ -107,6 +107,14 @@ func TestCallingCheckAccess(t *testing.T) {
 }
 
 func TestCreateAuthorizationRequest(t *testing.T) {
+	t.Parallel()
+	endpoint := "https://westus.authorization.azure.net/providers/Microsoft.Authorization/checkAccess?api-version=2021-06-01-preview"
+	scope := "https://authorization.azure.net/.default"
+	cred, err := azidentity.NewClientSecretCredential("888988bf-86f1-31ea-91cd-2d7cd011db48", "clientID", "clientSecret", nil)
+	if err != nil {
+		t.Error("Unable to create a new client secret credential")
+	}
+
 	resourceId := "resource456"
 	subjectAttributes := SubjectAttributes{
 		ObjectId:  "object123",
@@ -126,8 +134,11 @@ func TestCreateAuthorizationRequest(t *testing.T) {
 			Id: resourceId,
 		},
 	}
-
-	result := CreateAuthorizationRequest(resourceId, actions, subjectAttributes)
+	client, err := NewRemotePDPClient(endpoint, scope, cred, nil)
+	if err != nil {
+		t.Error("Unable to create a new PDP client")
+	}
+	result := client.CreateAuthorizationRequest(resourceId, actions, subjectAttributes)
 
 	if diff := cmp.Diff(result, expected); diff != "" {
 		t.Errorf("incorrect authorization request: %v", diff)
