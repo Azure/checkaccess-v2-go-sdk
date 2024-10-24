@@ -5,15 +5,32 @@ package token
 
 import (
 	"testing"
+	"time"
 
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/go-cmp/cmp"
 
+	"github.com/Azure/checkaccess-v2-go-sdk/client/internal"
 	"github.com/Azure/checkaccess-v2-go-sdk/client/internal/test"
 )
 
 func TestExtractClaims(t *testing.T) {
 	dummyObjectId := "1234567890"
-	validTestToken, err := test.CreateTestToken(dummyObjectId, nil)
+	claims := &internal.Custom{
+		ObjectId: dummyObjectId,
+		ClaimNames: map[string]interface{}{
+			"example_claim": "example_value",
+		},
+		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer:    "test-issuer",
+			Subject:   "test-subject",
+			Audience:  []string{"test-audience"},
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ID:        "unique-id",
+		},
+	}
+	validTestToken, err := test.CreateTestToken(dummyObjectId, claims)
 	if err != nil {
 		t.Errorf("Error creating test token: %v", err)
 	}
@@ -21,21 +38,18 @@ func TestExtractClaims(t *testing.T) {
 	tests := []struct {
 		name       string
 		token      string
-		wantOid    string
-		wantClaims map[string]interface{}
+		wantClaims *internal.Custom
 		wantErr    bool
 	}{
 		{
 			name:       "Can extract oid from a valid token",
 			token:      validTestToken,
-			wantOid:    dummyObjectId,
-			wantClaims: map[string]interface{}{"example_claim": "example_value"},
+			wantClaims: claims,
 			wantErr:    false,
 		},
 		{
 			name:       "Return an error when given an invalid jwt",
 			token:      "invalid",
-			wantOid:    "",
 			wantClaims: nil,
 			wantErr:    true,
 		},
@@ -50,11 +64,8 @@ func TestExtractClaims(t *testing.T) {
 					t.Errorf("Expect an error but got nothing")
 				}
 			} else {
-				if got.ObjectId != tt.wantOid {
-					t.Errorf("Got oid: %q, want %q", got.ObjectId, tt.wantOid)
-				}
-				if diff := cmp.Diff(got.ClaimNames, tt.wantClaims); diff != "" {
-					t.Errorf("Got claimNames: %q, want %q", got.ClaimNames, tt.wantClaims)
+				if diff := cmp.Diff(got, tt.wantClaims); diff != "" {
+					t.Errorf("Got: %q, want %q", got, tt.wantClaims)
 				}
 				if err != nil {
 					t.Errorf("Expect no error but got one")

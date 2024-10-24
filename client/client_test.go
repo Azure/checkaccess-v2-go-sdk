@@ -11,16 +11,15 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/checkaccess-v2-go-sdk/client/internal/test"
 	"github.com/google/go-cmp/cmp"
-)
 
-var (
-	endpoint = "https://westus.authorization.azure.net/providers/Microsoft.Authorization/checkAccess?api-version=2021-06-01-preview"
-	scope    = "https://authorization.azure.net/.default"
+	"github.com/Azure/checkaccess-v2-go-sdk/client/internal"
+	"github.com/Azure/checkaccess-v2-go-sdk/client/internal/test"
 )
 
 func TestClientCreate(t *testing.T) {
+	endpoint := "https://westus.authorization.azure.net/providers/Microsoft.Authorization/checkAccess?api-version=2021-06-01-preview"
+	scope := "https://authorization.azure.net/.default"
 	emptyString := "   "
 	cred, err := azidentity.NewClientSecretCredential("888988bf-86f1-31ea-91cd-2d7cd011db48", "clientID", "clientSecret", nil)
 	if err != nil {
@@ -74,6 +73,8 @@ func TestClientCreate(t *testing.T) {
 
 func TestCheckAccess(t *testing.T) {
 	t.Parallel()
+	endpoint := "https://westus.authorization.azure.net/providers/Microsoft.Authorization/checkAccess?api-version=2021-06-01-preview"
+
 	cases := []struct {
 		desc             string
 		returnedHttpCode int
@@ -94,7 +95,7 @@ func TestCheckAccess(t *testing.T) {
 	}
 	for _, tt := range cases {
 		t.Run(tt.desc, func(t *testing.T) {
-			mockPipeline := test.CreatePipelineWithServer(tt.returnedHttpCode)
+			mockPipeline := internal.CreatePipelineWithServer(tt.returnedHttpCode)
 			client := &remotePDPClient{endpoint, mockPipeline}
 			decision, err := client.CheckAccess(context.Background(), AuthorizationRequest{})
 			if decision != tt.expectedDecision && err != tt.expectedErr {
@@ -107,6 +108,8 @@ func TestCheckAccess(t *testing.T) {
 
 func TestCreateAuthorizationRequest(t *testing.T) {
 	t.Parallel()
+	endpoint := "https://westus.authorization.azure.net/providers/Microsoft.Authorization/checkAccess?api-version=2021-06-01-preview"
+	scope := "https://authorization.azure.net/.default"
 	actionInfo := []ActionInfo{{Id: "read"}, {Id: "write"}}
 	actions := []string{"read", "write"}
 	dummyObjectId := "1234567890"
@@ -123,7 +126,7 @@ func TestCreateAuthorizationRequest(t *testing.T) {
 
 	for _, tt := range []struct {
 		name                     string
-		claims                   *test.Custom
+		claims                   *internal.Custom
 		wantAuthorizationRequest *AuthorizationRequest
 		wantErr                  string
 	}{
@@ -133,7 +136,7 @@ func TestCreateAuthorizationRequest(t *testing.T) {
 		},
 		{
 			name: "pass - don't set claimName or groups when both exist",
-			claims: &test.Custom{
+			claims: &internal.Custom{
 				ObjectId: dummyObjectId,
 				ClaimNames: map[string]interface{}{
 					"groups": "src1",
@@ -152,7 +155,7 @@ func TestCreateAuthorizationRequest(t *testing.T) {
 		},
 		{
 			name: "pass - don't set claimName or groups when both don't exist",
-			claims: &test.Custom{
+			claims: &internal.Custom{
 				ObjectId: dummyObjectId,
 			},
 			wantAuthorizationRequest: &AuthorizationRequest{
@@ -167,7 +170,7 @@ func TestCreateAuthorizationRequest(t *testing.T) {
 		},
 		{
 			name: "pass - set claimName when claimName exits and groups don't exist",
-			claims: &test.Custom{
+			claims: &internal.Custom{
 				ObjectId: dummyObjectId,
 				ClaimNames: map[string]interface{}{
 					"groups": "src1",
@@ -185,7 +188,7 @@ func TestCreateAuthorizationRequest(t *testing.T) {
 		},
 		{
 			name: "pass - set groups when groups exits and claimName don't exist",
-			claims: &test.Custom{
+			claims: &internal.Custom{
 				ObjectId: dummyObjectId,
 				Groups:   []string{"group1", "group2"},
 			},
