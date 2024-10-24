@@ -5,12 +5,19 @@ package test
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/checkaccess-v2-go-sdk/client/internal"
 )
+
+type mockTransport struct {
+	statusCode int
+}
 
 func CreateTestToken(oid string, fakeClaims *internal.Custom) (string, error) {
 	// Define the signing key
@@ -46,4 +53,23 @@ func CreateTestToken(oid string, fakeClaims *internal.Custom) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+func (m *mockTransport) Do(req *http.Request) (*http.Response, error) {
+	return &http.Response{
+		StatusCode: m.statusCode,
+		Header:     make(http.Header),
+	}, nil
+}
+
+func CreatePipelineWithServer(returnedHttpCode int) runtime.Pipeline {
+	return runtime.NewPipeline(
+		"remotepdpclient_test",
+		"v0.1.0",
+		runtime.PipelineOptions{},
+		&policy.ClientOptions{
+			Transport: &mockTransport{
+				statusCode: returnedHttpCode,
+			},
+		})
 }

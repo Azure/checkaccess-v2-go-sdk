@@ -95,7 +95,7 @@ func TestCheckAccess(t *testing.T) {
 	}
 	for _, tt := range cases {
 		t.Run(tt.desc, func(t *testing.T) {
-			mockPipeline := internal.CreatePipelineWithServer(tt.returnedHttpCode)
+			mockPipeline := test.CreatePipelineWithServer(tt.returnedHttpCode)
 			client := &remotePDPClient{endpoint, mockPipeline}
 			decision, err := client.CheckAccess(context.Background(), AuthorizationRequest{})
 			if decision != tt.expectedDecision && err != tt.expectedErr {
