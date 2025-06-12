@@ -1,7 +1,10 @@
 include .bingo/Variables.mk
 
 lint: $(GOLANGCI_LINT)
-	$(GOLANGCI_LINT) run --verbose
+	$(GOLANGCI_LINT) run 
+
+lint-fix: $(GOLANGCI_LINT)
+	$(GOLANGCI_LINT) run --fix
 
 test: $(GOTESTSUM)
 	$(GOTESTSUM) --format pkgname --junitfile report.xml -- -coverprofile=cover.out ./...
