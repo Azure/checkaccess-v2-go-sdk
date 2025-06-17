@@ -1,6 +1,6 @@
 module github.com/Azure/checkaccess-v2-go-sdk
 
-go 1.23.0
+go 1.24.3
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.15.0

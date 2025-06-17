@@ -117,7 +117,7 @@ func (r *remotePDPClient) CreateAuthorizationRequest(resourceId string, actions 
 
 	tokenClaims, err := token.ExtractClaims(jwtToken)
 	if err != nil {
-		return nil, fmt.Errorf("error while parse the token, err: %v", err)
+		return nil, fmt.Errorf("error while parse the token, err: %w", err)
 	}
 
 	subjectAttributes := SubjectAttributes{}

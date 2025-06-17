@@ -9,9 +9,10 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/google/go-cmp/cmp"
 
 	"github.com/Azure/checkaccess-v2-go-sdk/client/internal"
 	"github.com/Azure/checkaccess-v2-go-sdk/client/internal/test"
@@ -98,7 +99,7 @@ func TestCheckAccess(t *testing.T) {
 			mockPipeline := test.CreatePipelineWithServer(tt.returnedHttpCode)
 			client := &remotePDPClient{endpoint, mockPipeline}
 			decision, err := client.CheckAccess(context.Background(), AuthorizationRequest{})
-			if decision != tt.expectedDecision && err != tt.expectedErr {
+			if decision != tt.expectedDecision && !errors.Is(err, tt.expectedErr) {
 				t.Errorf("expected decision to be %v; and error to be %s. Got %v and %s",
 					tt.expectedDecision, tt.expectedErr, decision, err)
 			}
