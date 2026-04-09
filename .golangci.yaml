@@ -1,0 +1,30 @@
+version: "2"
+run:
+  timeout: 10m
+  modules-download-mode: readonly
+issues:
+  # We want to make sure we get a full report every time. Setting these
+  # to zero disables the limit.
+  max-issues-per-linter: 0
+  max-same-issues: 0
+linters:
+  enable:
+  - errorlint
+  settings:
+    errorlint:
+      errorf: true
+formatters:
+  enable:
+  - gci
+  settings:
+    gci:
+      custom-order: true
+      sections:
+      - standard
+      - blank
+      - dot
+      - default
+      - prefix(k8s.io)
+      - prefix(sigs.k8s.io)
+      - prefix(github.com/Azure)
+      - localmodule

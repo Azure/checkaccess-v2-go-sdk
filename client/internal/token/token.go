@@ -4,8 +4,9 @@ package token
 // Licensed under the Apache License 2.0.
 
 import (
-	"github.com/Azure/checkaccess-v2-go-sdk/client/internal"
 	"github.com/golang-jwt/jwt/v4"
+
+	"github.com/Azure/checkaccess-v2-go-sdk/client/internal"
 )
 
 // ExtractClaims extracts the "oid", "_claim_names", and "groups" claims from a given access jwtToken and return them as a custom struct

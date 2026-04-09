@@ -12,6 +12,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+
 	"github.com/Azure/checkaccess-v2-go-sdk/client/internal"
 )
 
@@ -49,7 +50,7 @@ func CreateTestToken(oid string, fakeClaims *internal.Custom) (string, error) {
 	// Sign the token
 	tokenString, err := token.SignedString(signingKey)
 	if err != nil {
-		return "", fmt.Errorf("error signing token: %v", err)
+		return "", fmt.Errorf("error signing token: %w", err)
 	}
 
 	return tokenString, nil
