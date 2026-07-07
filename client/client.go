@@ -93,6 +93,16 @@ func (r *remotePDPClient) CheckAccess(ctx context.Context, authzReq Authorizatio
 
 // newCheckAccessError returns an error when non HTTP 200 response is returned.
 func newCheckAccessError(r *http.Response) error {
+	// The checkaccess API returns a plain-text body (e.g. "Too Many Requests") on 429 responses
+	// rather than JSON, so we short-circuit before json.Unmarshal to avoid a parse error.
+	if r.StatusCode == http.StatusTooManyRequests {
+		return &azcore.ResponseError{
+			StatusCode:  r.StatusCode,
+			RawResponse: r,
+			ErrorCode:   fmt.Sprint(http.StatusTooManyRequests),
+		}
+	}
+
 	payload, err := runtime.Payload(r)
 	if err != nil {
 		return err
