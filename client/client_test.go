@@ -107,6 +107,27 @@ func TestCheckAccess(t *testing.T) {
 	}
 }
 
+func TestCheckAccessRateLimit(t *testing.T) {
+	t.Parallel()
+	endpoint := "https://westus.authorization.azure.net/providers/Microsoft.Authorization/checkAccess?api-version=2021-06-01-preview"
+
+	mockPipeline := test.CreatePipelineWithServer(http.StatusTooManyRequests)
+	client := &remotePDPClient{endpoint, mockPipeline}
+	decision, err := client.CheckAccess(context.Background(), AuthorizationRequest{})
+
+	if decision != nil {
+		t.Errorf("expected decision to be nil but got %v", decision)
+	}
+
+	var respErr *azcore.ResponseError
+	if !errors.As(err, &respErr) {
+		t.Fatalf("expected *azcore.ResponseError but got %T: %v", err, err)
+	}
+	if respErr.StatusCode != http.StatusTooManyRequests {
+		t.Errorf("expected StatusCode %d but got %d", http.StatusTooManyRequests, respErr.StatusCode)
+	}
+}
+
 func TestCreateAuthorizationRequest(t *testing.T) {
 	t.Parallel()
 	endpoint := "https://westus.authorization.azure.net/providers/Microsoft.Authorization/checkAccess?api-version=2021-06-01-preview"
